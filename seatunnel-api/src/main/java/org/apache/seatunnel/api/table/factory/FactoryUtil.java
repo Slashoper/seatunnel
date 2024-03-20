@@ -43,10 +43,10 @@ import scala.Tuple2;
 
 import java.io.Serializable;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
@@ -63,17 +63,12 @@ public final class FactoryUtil {
     public static final String DEFAULT_ID = "default-identifier";
 
     public static <T, SplitT extends SourceSplit, StateT extends Serializable>
-            List<Tuple2<SeaTunnelSource<T, SplitT, StateT>, List<CatalogTable>>>
-                    createAndPrepareSource(
-                            ReadonlyConfig options,
-                            ClassLoader classLoader,
-                            String factoryIdentifier) {
+            Tuple2<SeaTunnelSource<T, SplitT, StateT>, List<CatalogTable>> createAndPrepareSource(
+                    ReadonlyConfig options, ClassLoader classLoader, String factoryIdentifier) {
 
         try {
             final TableSourceFactory factory =
                     discoverFactory(classLoader, TableSourceFactory.class, factoryIdentifier);
-            List<Tuple2<SeaTunnelSource<T, SplitT, StateT>, List<CatalogTable>>> sources =
-                    new ArrayList<>();
             SeaTunnelSource<T, SplitT, StateT> source =
                     createAndPrepareSource(factory, options, classLoader);
             List<CatalogTable> catalogTables;
@@ -99,8 +94,7 @@ public final class FactoryUtil {
                 catalogTables.clear();
                 catalogTables.add(catalogTable);
             }
-            sources.add(new Tuple2<>(source, catalogTables));
-            return sources;
+            return new Tuple2<>(source, catalogTables);
         } catch (Throwable t) {
             throw new FactoryException(
                     String.format(
@@ -136,6 +130,24 @@ public final class FactoryUtil {
                     String.format(
                             "Unable to create a sink for identifier '%s'.", factoryIdentifier),
                     t);
+        }
+    }
+
+    public static <IN, StateT, CommitInfoT, AggregatedCommitInfoT>
+            SeaTunnelSink<IN, StateT, CommitInfoT, AggregatedCommitInfoT> createMultiTableSink(
+                    Map<String, SeaTunnelSink> sinks,
+                    ReadonlyConfig options,
+                    ClassLoader classLoader) {
+        try {
+            TableSinkFactory<IN, StateT, CommitInfoT, AggregatedCommitInfoT> factory =
+                    discoverFactory(classLoader, TableSinkFactory.class, "MultiTableSink");
+            MultiTableFactoryContext context =
+                    new MultiTableFactoryContext(options, classLoader, sinks);
+            ConfigValidator.of(context.getOptions()).validate(factory.optionRule());
+            return factory.createSink(context).createSink();
+        } catch (Throwable t) {
+            throw new FactoryException(
+                    "Unable to create a sink for identifier 'MultiTableSink'.", t);
         }
     }
 

@@ -24,10 +24,10 @@ import org.apache.seatunnel.connectors.seatunnel.jdbc.catalog.oceanbase.OceanBas
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.utility.DockerLoggerFactory;
 
 import com.google.common.collect.Lists;
@@ -43,10 +43,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Disabled("Disabled due to insufficient hardware resources in the CI environment")
 public class JdbcOceanBaseMysqlIT extends JdbcOceanBaseITBase {
 
-    private static final String IMAGE = "oceanbase/oceanbase-ce:4.1.0.0";
+    private static final String IMAGE = "oceanbase/oceanbase-ce:4.2.0.0";
 
     private static final String HOSTNAME = "e2e_oceanbase_mysql";
     private static final int PORT = 2881;
@@ -280,11 +279,14 @@ public class JdbcOceanBaseMysqlIT extends JdbcOceanBaseITBase {
     @Override
     GenericContainer<?> initContainer() {
         return new GenericContainer<>(IMAGE)
+                .withEnv("MODE", "slim")
+                .withEnv("OB_DATAFILE_SIZE", "2G")
                 .withNetwork(NETWORK)
                 .withNetworkAliases(HOSTNAME)
                 .withExposedPorts(PORT)
+                .withImagePullPolicy(PullPolicy.alwaysPull())
                 .waitingFor(Wait.forLogMessage(".*boot success!.*", 1))
-                .withStartupTimeout(Duration.ofMinutes(3))
+                .withStartupTimeout(Duration.ofMinutes(5))
                 .withLogConsumer(new Slf4jLogConsumer(DockerLoggerFactory.getLogger(IMAGE)));
     }
 

@@ -27,9 +27,7 @@ import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.transform.common.AbstractCatalogSupportTransform;
-import org.apache.seatunnel.transform.exception.FieldMapperTransformErrorCode;
-import org.apache.seatunnel.transform.exception.FieldMapperTransformException;
-import org.apache.seatunnel.transform.exception.TransformException;
+import org.apache.seatunnel.transform.exception.TransformCommonError;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -45,7 +43,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FieldMapperTransform extends AbstractCatalogSupportTransform {
     public static String PLUGIN_NAME = "FieldMapper";
-    private FieldMapperTransformConfig config;
+    private final FieldMapperTransformConfig config;
     private List<Integer> needReaderColIndex;
 
     public FieldMapperTransform(
@@ -56,11 +54,18 @@ public class FieldMapperTransform extends AbstractCatalogSupportTransform {
         SeaTunnelRowType seaTunnelRowType = catalogTable.getTableSchema().toPhysicalRowDataType();
         List<String> notFoundField =
                 fieldMapper.keySet().stream()
-                        .filter(field -> seaTunnelRowType.indexOf(field) == -1)
+                        .filter(
+                                field -> {
+                                    try {
+                                        seaTunnelRowType.indexOf(field);
+                                        return false;
+                                    } catch (Exception e) {
+                                        return true;
+                                    }
+                                })
                         .collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(notFoundField)) {
-            throw new TransformException(
-                    FieldMapperTransformErrorCode.INPUT_FIELD_NOT_FOUND, notFoundField.toString());
+            throw TransformCommonError.cannotFindInputFieldsError(getPluginName(), notFoundField);
         }
     }
 
@@ -92,13 +97,12 @@ public class FieldMapperTransform extends AbstractCatalogSupportTransform {
         List<Column> outputColumns = new ArrayList<>(fieldMapper.size());
         needReaderColIndex = new ArrayList<>(fieldMapper.size());
         ArrayList<String> inputFieldNames = Lists.newArrayList(seaTunnelRowType.getFieldNames());
+        ArrayList<String> outputFieldNames = new ArrayList<>();
         fieldMapper.forEach(
                 (key, value) -> {
                     int fieldIndex = inputFieldNames.indexOf(key);
                     if (fieldIndex < 0) {
-                        throw new FieldMapperTransformException(
-                                FieldMapperTransformErrorCode.INPUT_FIELD_NOT_FOUND,
-                                "Can not found field " + key + " from inputRowType");
+                        throw TransformCommonError.cannotFindInputFieldError(getPluginName(), key);
                     }
                     Column oldColumn = inputColumns.get(fieldIndex);
                     PhysicalColumn outputColumn =
@@ -110,18 +114,32 @@ public class FieldMapperTransform extends AbstractCatalogSupportTransform {
                                     oldColumn.getDefaultValue(),
                                     oldColumn.getComment());
                     outputColumns.add(outputColumn);
+                    outputFieldNames.add(outputColumn.getName());
                     needReaderColIndex.add(fieldIndex);
                 });
 
         List<ConstraintKey> outputConstraintKeys =
                 inputCatalogTable.getTableSchema().getConstraintKeys().stream()
+                        .filter(
+                                key -> {
+                                    List<String> constraintColumnNames =
+                                            key.getColumnNames().stream()
+                                                    .map(
+                                                            ConstraintKey.ConstraintKeyColumn
+                                                                    ::getColumnName)
+                                                    .collect(Collectors.toList());
+                                    return outputFieldNames.containsAll(constraintColumnNames);
+                                })
                         .map(ConstraintKey::copy)
                         .collect(Collectors.toList());
 
-        PrimaryKey copiedPrimaryKey =
-                inputCatalogTable.getTableSchema().getPrimaryKey() == null
-                        ? null
-                        : inputCatalogTable.getTableSchema().getPrimaryKey().copy();
+        PrimaryKey copiedPrimaryKey = null;
+        if (inputCatalogTable.getTableSchema().getPrimaryKey() != null
+                && outputFieldNames.containsAll(
+                        inputCatalogTable.getTableSchema().getPrimaryKey().getColumnNames())) {
+            copiedPrimaryKey = inputCatalogTable.getTableSchema().getPrimaryKey().copy();
+        }
+
         return TableSchema.builder()
                 .primaryKey(copiedPrimaryKey)
                 .columns(outputColumns)

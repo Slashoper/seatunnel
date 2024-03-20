@@ -50,8 +50,11 @@ public class TransformExecuteProcessor
         extends FlinkAbstractPluginExecuteProcessor<TableTransformFactory> {
 
     protected TransformExecuteProcessor(
-            List<URL> jarPaths, List<? extends Config> pluginConfigs, JobContext jobContext) {
-        super(jarPaths, pluginConfigs, jobContext);
+            List<URL> jarPaths,
+            Config envConfig,
+            List<? extends Config> pluginConfigs,
+            JobContext jobContext) {
+        super(jarPaths, envConfig, pluginConfigs, jobContext);
     }
 
     @Override
@@ -91,11 +94,10 @@ public class TransformExecuteProcessor
                 ConfigValidator.of(context.getOptions()).validate(factory.optionRule());
                 SeaTunnelTransform transform = factory.createTransform(context).createTransform();
 
-                SeaTunnelRowType sourceType = initSourceType(pluginConfig, stream.getDataStream());
+                SeaTunnelRowType sourceType = stream.getCatalogTable().getSeaTunnelRowType();
                 transform.setJobContext(jobContext);
                 DataStream<Row> inputStream =
                         flinkTransform(sourceType, transform, stream.getDataStream());
-                stageType(pluginConfig, transform.getProducedCatalogTable().getSeaTunnelRowType());
                 registerResultTable(pluginConfig, inputStream);
                 upstreamDataStreams.add(
                         new DataStreamTableInfo(

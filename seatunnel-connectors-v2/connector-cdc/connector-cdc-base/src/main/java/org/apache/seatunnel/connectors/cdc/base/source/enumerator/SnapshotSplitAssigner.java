@@ -43,6 +43,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 /** Assigner for snapshot split. */
 public class SnapshotSplitAssigner<C extends SourceConfig> implements SplitAssigner {
@@ -129,6 +130,16 @@ public class SnapshotSplitAssigner<C extends SourceConfig> implements SplitAssig
         this.isRemainingTablesCheckpointed = isRemainingTablesCheckpointed;
         this.isTableIdCaseSensitive = isTableIdCaseSensitive;
         this.dialect = dialect;
+
+        LOG.info("SnapshotSplitAssigner created with remaining tables: {}", this.remainingTables);
+        LOG.info(
+                "SnapshotSplitAssigner created with remaining splits: [{}]",
+                this.remainingSplits.stream()
+                        .map(SnapshotSplit::splitId)
+                        .collect(Collectors.joining(",")));
+        LOG.info(
+                "SnapshotSplitAssigner created with assigned splits: {}",
+                this.assignedSplits.keySet());
     }
 
     @Override
@@ -217,13 +228,13 @@ public class SnapshotSplitAssigner<C extends SourceConfig> implements SplitAssig
                 new SnapshotPhaseState(
                         alreadyProcessedTables,
                         remainingSplits.isEmpty()
-                                ? Collections.emptyList()
+                                ? new ArrayList<>()
                                 : new ArrayList<>(remainingSplits),
                         assignedSplits,
                         splitCompletedOffsets,
                         assignerCompleted,
                         remainingTables.isEmpty()
-                                ? Collections.emptyList()
+                                ? new ArrayList<>()
                                 : new ArrayList<>(remainingTables),
                         isTableIdCaseSensitive,
                         true);

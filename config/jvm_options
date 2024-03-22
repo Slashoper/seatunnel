@@ -14,17 +14,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+## Base config
+# JVM Heap
+#-Xms2g
+#-Xmx2g
+
+# JVM Dump
+#-XX:+HeapDumpOnOutOfMemoryError
+#-XX:HeapDumpPath=/tmp/seatunnel/dump/zeta-server
+
+# Metaspace
+#-XX:MaxMetaspaceSize=2g
+
+# G1GC
+#-XX:+UseG1GC
+
 
 # JVM Heap
--Xms2g
--Xmx2g
+-Xms20g
+-Xmx20g
 
 # JVM Dump
 -XX:+HeapDumpOnOutOfMemoryError
 -XX:HeapDumpPath=/tmp/seatunnel/dump/zeta-server
 
 # Metaspace
--XX:MaxMetaspaceSize=2g
+-XX:MaxMetaspaceSize=8g
 
 # G1GC
 -XX:+UseG1GC

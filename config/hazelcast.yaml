@@ -14,6 +14,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+## base config
+#hazelcast:
+#  cluster-name: seatunnel
+#  network:
+#    rest-api:
+#      enabled: true
+#      endpoint-groups:
+#        CLUSTER_WRITE:
+#          enabled: true
+#        DATA:
+#          enabled: true
+#    join:
+#      tcp-ip:
+#        enabled: true
+#        member-list:
+#          - localhost
+#    port:
+#      auto-increment: false
+#      port: 5801
+#  properties:
+#    hazelcast.invocation.max.retry.count: 20
+#    hazelcast.tcp.join.port.try.count: 30
+#    hazelcast.logging.type: log4j2
+#    hazelcast.operation.generic.thread.count: 50
 
 hazelcast:
   cluster-name: seatunnel
@@ -29,13 +53,16 @@ hazelcast:
       tcp-ip:
         enabled: true
         member-list:
-          - localhost
+          - bdp-seatunnel-01
+          - bdp-seatunnel-02
+          - bdp-seatunnel-03
     port:
-      auto-increment: false
+      auto-increment: true
+      port-count: 100
       port: 5801
   properties:
     hazelcast.invocation.max.retry.count: 20
     hazelcast.tcp.join.port.try.count: 30
     hazelcast.logging.type: log4j2
-    hazelcast.operation.generic.thread.count: 50
+    hazelcast.operation.generic.thread.count: 100
 

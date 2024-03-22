@@ -14,14 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+## Base config
+#hazelcast-client:
+#  cluster-name: seatunnel
+#  properties:
+#    hazelcast.logging.type: log4j2
+#  connection-strategy:
+#    connection-retry:
+#      cluster-connect-timeout-millis: 3000
+#  network:
+#    cluster-members:
+#      - localhost:5801
+
 
 hazelcast-client:
   cluster-name: seatunnel
   properties:
     hazelcast.logging.type: log4j2
-  connection-strategy:
-    connection-retry:
-      cluster-connect-timeout-millis: 3000
   network:
     cluster-members:
-      - localhost:5801
+      - bdp-seatunnel-01:5801
+      - bdp-seatunnel-02:5801
+      - bdp-seatunnel-03:5801

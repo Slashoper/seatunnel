@@ -14,10 +14,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+## Base config
+#seatunnel:
+#  engine:
+#    history-job-expire-minutes: 1440
+#    backup-count: 1
+#    queue-type: blockingqueue
+#    print-execution-info-interval: 60
+#    print-job-metrics-info-interval: 60
+#    slot-service:
+#      dynamic-slot: true
+#    checkpoint:
+#      interval: 10000
+#      timeout: 60000
+#      storage:
+#        type: hdfs
+#        max-retained: 3
+#        plugin-config:
+#          namespace: /tmp/seatunnel/checkpoint_snapshot
+#          storage.type: hdfs
+#          fs.defaultFS: file:///tmp/ # Ensure that the directory has written permission
 
 seatunnel:
   engine:
-    history-job-expire-minutes: 1440
     backup-count: 1
     queue-type: blockingqueue
     print-execution-info-interval: 60
@@ -25,12 +44,25 @@ seatunnel:
     slot-service:
       dynamic-slot: true
     checkpoint:
-      interval: 10000
-      timeout: 60000
+      interval: 300000
+      timeout: 1800000
+      max-concurrent: 5
+      tolerable-failure: 2
       storage:
         type: hdfs
         max-retained: 3
         plugin-config:
-          namespace: /tmp/seatunnel/checkpoint_snapshot
-          storage.type: hdfs
-          fs.defaultFS: file:///tmp/ # Ensure that the directory has written permission
+          storage.type: s3
+          s3.bucket: s3a://dfg-seatunnel-sit
+          namespace: /checkpoint_snapshot/
+          fs.s3a.endpoint: http://10.83.4.204:8060
+          fs.s3a.access.key: 6NTWJGZLSK1Y9F38WC48
+          fs.s3a.secret.key: IY7mBaNTI3Y7u6ZO0x02FqYu87IDOdkELzTlAdM5
+          fs.s3a.aws.credentials.provider: org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider
+      #storage:
+      #  type: hdfs
+      #  max-retained: 3
+      #  plugin-config:
+      #    namespace: /tmp/seatunnel/checkpoint_snapshot
+      #    storage.type: hdfs
+      #    fs.defaultFS: file:///tmp/ # Ensure that the directory has written permission

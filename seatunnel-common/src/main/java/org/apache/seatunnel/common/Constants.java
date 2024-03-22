@@ -43,6 +43,8 @@ public final class Constants {
 
     public static final String NOW = "now";
 
+    public static final String LOCAL_JOBCONFIG_PATH = "/tmp/seatunnel";
+
     public static final String ST_LOGO =
             "                                                         \n"
                     + " _____               _____                             _ \n"

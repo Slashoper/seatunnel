@@ -22,6 +22,7 @@ import org.apache.seatunnel.shade.com.typesafe.config.ConfigUtil;
 import org.apache.seatunnel.shade.com.typesafe.config.ConfigValueFactory;
 
 import org.apache.seatunnel.common.Constants;
+import org.apache.seatunnel.common.utils.S3Utils;
 import org.apache.seatunnel.core.starter.command.Command;
 import org.apache.seatunnel.core.starter.exception.CommandExecuteException;
 import org.apache.seatunnel.core.starter.flink.args.FlinkCommandArgs;
@@ -31,7 +32,10 @@ import org.apache.seatunnel.core.starter.utils.FileUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.UUID;
 
 import static org.apache.seatunnel.core.starter.utils.FileUtils.checkConfigExist;
 
@@ -46,9 +50,14 @@ public class FlinkTaskExecuteCommand implements Command<FlinkCommandArgs> {
 
     @Override
     public void execute() throws CommandExecuteException {
-        Path configFile = FileUtils.getConfigPath(flinkCommandArgs);
-        checkConfigExist(configFile);
-        Config config = ConfigBuilder.of(configFile);
+        Config config;
+        if (flinkCommandArgs.getConfigFile().startsWith("s3a")) {
+            config = getConf(flinkCommandArgs.getConfigFile());
+        } else {
+            Path configFile = FileUtils.getConfigPath(flinkCommandArgs);
+            checkConfigExist(configFile);
+            config = ConfigBuilder.of(configFile);
+        }
         // if user specified job name using command line arguments, override config option
         if (!flinkCommandArgs.getJobName().equals(Constants.LOGO)) {
             config =
@@ -61,6 +70,26 @@ public class FlinkTaskExecuteCommand implements Command<FlinkCommandArgs> {
             seaTunnelTaskExecution.execute();
         } catch (Exception e) {
             throw new CommandExecuteException("Flink job executed failed", e);
+        }
+    }
+
+    private Config getConf(String configFlie) {
+        S3Utils s3Utils = S3Utils.getInstance();
+        String configFileName = UUID.randomUUID().toString();
+        try {
+            Path configFile =
+                    s3Utils.download(
+                            configFlie,
+                            Constants.LOCAL_JOBCONFIG_PATH + File.separator + configFileName);
+            return ConfigBuilder.of(configFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                s3Utils.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

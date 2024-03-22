@@ -10,7 +10,7 @@ RUN cd /opt/flink/project \
     && wget http://${SERVER_HOST}/bdp/seatunnel/2.3.3/seatunnel/starter/seatunnel-flink-15-starter.jar
 
 RUN cd /opt/flink/conf \
-    && wget http://${SERVER_HOST}/bdp/seatunnel/fake_to_console.conf \
+    && wget http://${SERVER_HOST}/bdp/seatunnel/fake_to_console.conf
 
 RUN cd /opt \
     && wget http://${SERVER_HOST}/bdp/seatunnel/${SEATUNNEL_VERSION}/apache-seatunnel-${SEATUNNEL_VERSION}-bin.tar.gz   \

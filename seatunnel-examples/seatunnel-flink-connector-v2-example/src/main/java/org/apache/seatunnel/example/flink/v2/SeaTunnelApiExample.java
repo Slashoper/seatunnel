@@ -31,6 +31,7 @@ public class SeaTunnelApiExample {
     public static void main(String[] args)
             throws FileNotFoundException, URISyntaxException, CommandException {
         String configurePath = args.length > 0 ? args[0] : "/examples/fake_to_console.conf";
+
         String configFile;
         if (configurePath.startsWith("s3a")) {
             configFile = configurePath;
@@ -41,6 +42,19 @@ public class SeaTunnelApiExample {
         flinkCommandArgs.setConfigFile(configFile);
         flinkCommandArgs.setCheckConfig(false);
         flinkCommandArgs.setVariables(null);
+        if (args.length > 1){
+            String ak = args[1];
+            String sk = args[2];
+            String bucketName = args[3];
+            String endPoint = args[4];
+
+            flinkCommandArgs.setAccessKey(ak);
+            flinkCommandArgs.setSecretKey(sk);
+            flinkCommandArgs.setBucketName(bucketName);
+            flinkCommandArgs.setEndPoint(endPoint);
+        }
+
+//        flinkCommandArgs.
         SeaTunnel.run(flinkCommandArgs.buildCommand());
     }
 

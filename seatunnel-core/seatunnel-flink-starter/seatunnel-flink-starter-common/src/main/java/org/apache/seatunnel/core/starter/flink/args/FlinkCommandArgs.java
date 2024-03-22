@@ -53,6 +53,31 @@ public class FlinkCommandArgs extends AbstractCommandArgs {
                             + "kubernetes-session, yarn-application, kubernetes-application]")
     private MasterType masterType;
 
+
+    @Parameter(
+            names = {"-ak", "--access-key"},
+            description = "Flink job config use s3 access key support [kubernetes-application]")
+    private String accessKey;
+
+
+    @Parameter(
+            names = {"-sk", "--secret-key"},
+            description = "Flink job config use s3 secret key support [kubernetes-application]")
+    private String secretKey;
+
+
+    @Parameter(
+            names = {"-ep", "--end-point"},
+            description = "Flink job config use s3 end point support [kubernetes-application]")
+    private String endPoint;
+
+
+    @Parameter(
+            names = {"-bk", "--bucket-name"},
+            description = "Flink job config use s3 bucket name support [kubernetes-application]")
+    private String bucketName;
+
+
     @Override
     public Command<?> buildCommand() {
         Common.setDeployMode(getDeployMode());

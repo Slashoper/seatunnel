@@ -74,7 +74,8 @@ public class FlinkTaskExecuteCommand implements Command<FlinkCommandArgs> {
     }
 
     private Config getConf(String configFlie) {
-        S3Utils s3Utils = S3Utils.getInstance();
+        S3Utils s3Utils = S3Utils.getInstance(
+                flinkCommandArgs.getAccessKey(),flinkCommandArgs.getSecretKey(),flinkCommandArgs.getBucketName(),flinkCommandArgs.getEndPoint());
         String configFileName = UUID.randomUUID().toString();
         try {
             Path configFile =

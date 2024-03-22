@@ -17,6 +17,7 @@
 
 package org.apache.seatunnel.core.starter.flink;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.seatunnel.common.config.Common;
 import org.apache.seatunnel.core.starter.Starter;
 import org.apache.seatunnel.core.starter.enums.EngineType;
@@ -86,6 +87,28 @@ public class FlinkStarter implements Starter {
         if (flinkCommandArgs.isDecrypt()) {
             command.add("--decrypt");
         }
+        // set s3 access key
+        if (StringUtils.isNotBlank(flinkCommandArgs.getAccessKey())){
+            command.add("--access-key");
+            command.add(flinkCommandArgs.getAccessKey());
+        }
+        // set s3 secret key
+        if (StringUtils.isNotBlank(flinkCommandArgs.getSecretKey())){
+            command.add("--secret-key");
+            command.add(flinkCommandArgs.getSecretKey());
+        }
+
+        // set s3 bucket name
+        if(StringUtils.isNotBlank(flinkCommandArgs.getBucketName())){
+            command.add("--bucket-name");
+            command.add(flinkCommandArgs.getBucketName());
+        }
+        // set s3 end point
+        if(StringUtils.isNotBlank(flinkCommandArgs.getEndPoint())){
+            command.add("--end-point");
+            command.add(flinkCommandArgs.getEndPoint());
+        }
+
         // set extra system properties
         flinkCommandArgs.getVariables().stream()
                 .filter(Objects::nonNull)

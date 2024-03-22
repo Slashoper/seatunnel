@@ -53,19 +53,25 @@ public class S3Utils {
 
     private static final Logger logger = LoggerFactory.getLogger(S3Utils.class);
 
-    private static final String ACCESS_KEY_ID = "6NTWJGZLSK1Y9F38WC48";
+    private String ACCESS_KEY_ID = "6NTWJGZLSK1Y9F38WC48";
 
-    private static final String SECRET_KEY_ID = "IY7mBaNTI3Y7u6ZO0x02FqYu87IDOdkELzTlAdM5";
+    private String SECRET_KEY_ID = "IY7mBaNTI3Y7u6ZO0x02FqYu87IDOdkELzTlAdM5";
 
-    public static final String REGION = "cn-north-1";
+    public static final String REGION = Constants.DEFAULT_S3_REGION;
 
     private String BUCKET_NAME = "dolphinscheduler";
 
     private String AWS_END_POINT = "http://10.83.4.204:8060";
 
-    private AmazonS3 s3Client = null;
+    private AmazonS3 s3Client ;
 
-    private S3Utils() {
+    private static volatile S3Utils s3Utils ;
+
+    private S3Utils(String ak,String sk,String bucketName,String entryPoint) {
+        this.ACCESS_KEY_ID = ak;
+        this.SECRET_KEY_ID = sk;
+        this.BUCKET_NAME = bucketName;
+        this.AWS_END_POINT = entryPoint;
         s3Client =
                 AmazonS3ClientBuilder.standard()
                         .withPathStyleAccessEnabled(true)
@@ -80,32 +86,60 @@ public class S3Utils {
         //        }
     }
 
-    /** S3Utils single */
-    private enum S3Singleton {
-        INSTANCE;
+//    /** S3Utils single */
+//    private enum S3Singleton {
+//        INSTANCE;
+//
+//        private final S3Utils instance;
+//
+//        S3Singleton() {
+//            instance = new S3Utils();
+//        }
+//
+//        private S3Utils getInstance() {
+//            return instance;
+//        }
+//    }
 
-        private final S3Utils instance;
 
-        S3Singleton() {
-            instance = new S3Utils();
+    public static S3Utils getInstance(String ak,String sk,String bucketName,String entryPoint) {
+        // 双重检查加锁
+        if (s3Utils == null) {
+            synchronized (S3Utils.class) {
+                // 延迟实例化,需要时才创建
+                if (s3Utils == null) {
+
+                    S3Utils temp = null;
+                    try {
+                        temp = new S3Utils(ak,sk,bucketName,entryPoint);
+                    } catch (Exception e) {
+                    }
+                    if (temp != null)    //为什么要做这个看似无用的操作，因为这一步是为了让虚拟机执行到这一步的时会才对singleton赋值，虚拟机执行到这里的时候，必然已经完成类实例的初始化。所以这种写法的DCL是安全的。由于try的存在，虚拟机无法优化temp是否为null
+                        s3Utils = temp;
+                }
+            }
         }
-
-        private S3Utils getInstance() {
-            return instance;
-        }
+        return s3Utils;
     }
 
-    public static S3Utils getInstance() {
-        return S3Singleton.INSTANCE.getInstance();
+    public AmazonS3 getS3Client(){
+        return this.s3Client;
     }
+
 
     public void close() throws IOException {
         s3Client.shutdown();
     }
 
     public static void main(String[] args) throws Exception {
-        S3Utils s3Utils = S3Utils.getInstance();
-        System.out.println(s3Utils.exists("1711015209646.log"));
+        String ak = "6NTWJGZLSK1Y9F38WC48";
+        String sk = "IY7mBaNTI3Y7u6ZO0x02FqYu87IDOdkELzTlAdM5";
+        String bucketName = "dolphinscheduler";
+        String entryPoint = "http://10.83.4.204:8060";
+        S3Utils s3Utils1 = S3Utils.getInstance(ak,sk,bucketName,entryPoint);
+        S3Utils s3Utils2 = S3Utils.getInstance(ak,sk,bucketName,entryPoint);
+        System.out.println(s3Utils1.getS3Client() == s3Utils2.getS3Client());
+        System.out.println(s3Utils1.exists("1711015209646.log"));
         String configFileName = UUID.randomUUID().toString();
 
         //        System.out.println(s3Utils.readFile("/1711015209646.log"));

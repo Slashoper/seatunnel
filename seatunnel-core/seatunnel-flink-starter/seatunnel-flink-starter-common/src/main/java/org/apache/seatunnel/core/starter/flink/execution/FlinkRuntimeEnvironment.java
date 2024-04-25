@@ -17,6 +17,9 @@
 
 package org.apache.seatunnel.core.starter.flink.execution;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.flink.configuration.PipelineOptionsInternal;
+import org.apache.seatunnel.core.starter.flink.args.FlinkCommandArgs;
 import org.apache.seatunnel.shade.com.typesafe.config.Config;
 
 import org.apache.seatunnel.api.env.EnvCommonOptions;
@@ -69,8 +72,17 @@ public class FlinkRuntimeEnvironment implements RuntimeEnvironment {
 
     private String jobName = Constants.LOGO;
 
-    private FlinkRuntimeEnvironment(Config config) {
+
+    private FlinkCommandArgs flinkCommandArgs;
+
+    private FlinkRuntimeEnvironment(Config config,FlinkCommandArgs flinkCommandArgs) {
+        this.setFlinkCommandArgs(flinkCommandArgs);
         this.initialize(config);
+    }
+
+
+    public void setFlinkCommandArgs(FlinkCommandArgs flinkCommandArgs) {
+        this.flinkCommandArgs = flinkCommandArgs;
     }
 
     @Override
@@ -188,6 +200,9 @@ public class FlinkRuntimeEnvironment implements RuntimeEnvironment {
 
     private void createStreamEnvironment() {
         Configuration configuration = new Configuration();
+        if(StringUtils.isNotBlank(flinkCommandArgs.getJobId())) {
+            configuration.setString(PipelineOptionsInternal.PIPELINE_FIXED_JOB_ID, flinkCommandArgs.getJobId());
+        }
         EnvironmentUtil.initConfiguration(config, configuration);
         environment = StreamExecutionEnvironment.getExecutionEnvironment(configuration);
         setTimeCharacteristic();
@@ -351,11 +366,11 @@ public class FlinkRuntimeEnvironment implements RuntimeEnvironment {
                 name, tableEnvironment.fromChangelogStream(dataStream));
     }
 
-    public static FlinkRuntimeEnvironment getInstance(Config config) {
+    public static FlinkRuntimeEnvironment getInstance(Config config,FlinkCommandArgs flinkCommandArgs) {
         if (INSTANCE == null) {
             synchronized (FlinkRuntimeEnvironment.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new FlinkRuntimeEnvironment(config);
+                    INSTANCE = new FlinkRuntimeEnvironment(config,flinkCommandArgs);
                 }
             }
         }

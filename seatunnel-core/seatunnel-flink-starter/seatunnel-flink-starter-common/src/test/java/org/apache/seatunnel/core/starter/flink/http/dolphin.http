@@ -1,0 +1,8 @@
+### Send POST request with json body
+POST http://localhost:12345/dolphinscheduler/task/state/flinkCallBack
+Content-Type: application/json
+
+{
+  "jobId": "b439e86662ecf17caa79960039feac32",
+  "state": 1
+}

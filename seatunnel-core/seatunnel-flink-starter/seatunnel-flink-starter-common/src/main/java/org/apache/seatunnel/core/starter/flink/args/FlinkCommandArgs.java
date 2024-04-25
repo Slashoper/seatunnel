@@ -19,10 +19,7 @@ package org.apache.seatunnel.core.starter.flink.args;
 
 import org.apache.seatunnel.common.config.Common;
 import org.apache.seatunnel.common.config.DeployMode;
-import org.apache.seatunnel.core.starter.command.AbstractCommandArgs;
-import org.apache.seatunnel.core.starter.command.Command;
-import org.apache.seatunnel.core.starter.command.ConfDecryptCommand;
-import org.apache.seatunnel.core.starter.command.ConfEncryptCommand;
+import org.apache.seatunnel.core.starter.command.*;
 import org.apache.seatunnel.core.starter.enums.MasterType;
 import org.apache.seatunnel.core.starter.flink.command.FlinkConfValidateCommand;
 import org.apache.seatunnel.core.starter.flink.command.FlinkTaskExecuteCommand;
@@ -33,6 +30,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -52,6 +50,31 @@ public class FlinkCommandArgs extends AbstractCommandArgs {
                     "Flink job submitted target master, support [local, remote, yarn-session, yarn-per-job, "
                             + "kubernetes-session, yarn-application, kubernetes-application]")
     private MasterType masterType;
+
+
+
+    /** Flink kubernets parameters */
+    @Parameter(
+            names = {"-k", "--parameter"},
+            splitter = ParameterSplitter.class,
+            description =
+                    "Variable substitution, such as -k city=beijing, or -k date=20190318."
+                            + "We use ',' as separator, when inside \"\", ',' are treated as normal characters instead of delimiters.")
+    protected List<String> k8sParameters = Collections.emptyList();
+
+
+    @Parameter(
+            names = {"--ss", "--should-sync"},
+            description =
+                    "sync task state ")
+    private String shouldSync = "0";
+
+    @Parameter(
+            names = {"--ji", "--job-id"},
+            description =
+                    "Flink job id, support [local, remote, yarn-session, yarn-per-job, "
+                            + "kubernetes-session, yarn-application, kubernetes-application]")
+    private String jobId;
 
 
     @Parameter(

@@ -30,6 +30,7 @@ public class SeaTunnelApiExample {
 
     public static void main(String[] args)
             throws FileNotFoundException, URISyntaxException, CommandException {
+        // k8s args --target kubernetes-application --config s3a:/dolphinscheduler/fake_to_console.conf --name SeaTunnel --access-key 6NTWJGZLSK1Y9F38WC48 --secret-key IY7mBaNTI3Y7u6ZO0x02FqYu87IDOdkELzTlAdM5 --bucket-name dolphinscheduler --end-point http://10.83.4.204:8060
         String configurePath = args.length > 0 ? args[0] : "/examples/fake_to_console.conf";
 
         String configFile;
@@ -47,11 +48,17 @@ public class SeaTunnelApiExample {
             String sk = args[2];
             String bucketName = args[3];
             String endPoint = args[4];
+            String jobId = args[5];
+            String shouldSync = args[6];
 
-            flinkCommandArgs.setAccessKey(ak);
-            flinkCommandArgs.setSecretKey(sk);
-            flinkCommandArgs.setBucketName(bucketName);
-            flinkCommandArgs.setEndPoint(endPoint);
+
+//            flinkCommandArgs.setAccessKey(ak);
+//            flinkCommandArgs.setSecretKey(sk);
+//            flinkCommandArgs.setBucketName(bucketName);
+//            flinkCommandArgs.setEndPoint(endPoint);
+//            flinkCommandArgs.setJobId(jobId);
+//            flinkCommandArgs.setShouldSync(shouldSync);
+//            flinkCommandArgs.set
         }
 
 //        flinkCommandArgs.

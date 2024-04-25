@@ -17,6 +17,15 @@
 
 package org.apache.seatunnel.core.starter.flink.execution;
 
+import org.apache.flink.api.common.ExecutionConfig;
+import org.apache.flink.api.common.restartstrategy.RestartStrategies;
+import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.GlobalConfiguration;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.graph.StreamGraph;
+import org.apache.seatunnel.core.starter.flink.args.FlinkCommandArgs;
+import org.apache.seatunnel.core.starter.flink.listener.CustomJobListener;
 import org.apache.seatunnel.shade.com.typesafe.config.Config;
 import org.apache.seatunnel.shade.com.typesafe.config.ConfigUtil;
 import org.apache.seatunnel.shade.com.typesafe.config.ConfigValueFactory;
@@ -45,11 +54,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,7 +72,9 @@ public class FlinkExecution implements TaskExecution {
             sinkPluginExecuteProcessor;
     private final List<URL> jarPaths;
 
-    public FlinkExecution(Config config) {
+    private final FlinkCommandArgs flinkCommandArgs;
+
+    public FlinkExecution(Config config,FlinkCommandArgs flinkCommandArgs) {
         try {
             jarPaths =
                     new ArrayList<>(
@@ -86,6 +93,8 @@ public class FlinkExecution implements TaskExecution {
         JobContext jobContext = new JobContext();
         jobContext.setJobMode(RuntimeEnvironment.getJobMode(config));
 
+        this.flinkCommandArgs = flinkCommandArgs;
+
         this.sourcePluginExecuteProcessor =
                 new SourceExecuteProcessor(
                         jarPaths, envConfig, config.getConfigList(Constants.SOURCE), jobContext);
@@ -101,19 +110,31 @@ public class FlinkExecution implements TaskExecution {
                         jarPaths, envConfig, config.getConfigList(Constants.SINK), jobContext);
 
         this.flinkRuntimeEnvironment =
-                FlinkRuntimeEnvironment.getInstance(this.registerPlugin(config, jarPaths));
+                FlinkRuntimeEnvironment.getInstance(this.registerPlugin(config, jarPaths),flinkCommandArgs);
 
         this.sourcePluginExecuteProcessor.setRuntimeEnvironment(flinkRuntimeEnvironment);
         this.transformPluginExecuteProcessor.setRuntimeEnvironment(flinkRuntimeEnvironment);
         this.sinkPluginExecuteProcessor.setRuntimeEnvironment(flinkRuntimeEnvironment);
     }
 
+    // Flink 作业运行主窗口
     @Override
     public void execute() throws TaskExecuteException {
         List<DataStreamTableInfo> dataStreams = new ArrayList<>();
         dataStreams = sourcePluginExecuteProcessor.execute(dataStreams);
         dataStreams = transformPluginExecuteProcessor.execute(dataStreams);
         sinkPluginExecuteProcessor.execute(dataStreams);
+//         设置不重启
+        flinkRuntimeEnvironment
+                .getStreamExecutionEnvironment()
+                .setRestartStrategy(RestartStrategies.noRestart());
+
+//        自定义jobListener 来收集任务状态
+        flinkRuntimeEnvironment
+                .getStreamExecutionEnvironment()
+                .registerJobListener(new CustomJobListener(flinkCommandArgs));
+
+
         LOGGER.info(
                 "Flink Execution Plan: {}",
                 flinkRuntimeEnvironment.getStreamExecutionEnvironment().getExecutionPlan());
@@ -138,8 +159,8 @@ public class FlinkExecution implements TaskExecution {
                             .jobStartTime(jobStartTime)
                             .jobEndTime(jobEndTime)
                             .build();
-
             LOGGER.info("Job finished, execution result: \n{}", jobMetricsSummary);
+
         } catch (Exception e) {
             throw new TaskExecuteException("Execute Flink job error", e);
         }

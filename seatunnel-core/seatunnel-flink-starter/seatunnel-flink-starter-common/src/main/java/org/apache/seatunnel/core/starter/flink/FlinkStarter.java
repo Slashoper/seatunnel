@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.seatunnel.common.config.Common;
 import org.apache.seatunnel.core.starter.Starter;
 import org.apache.seatunnel.core.starter.enums.EngineType;
+import org.apache.seatunnel.core.starter.enums.MasterType;
 import org.apache.seatunnel.core.starter.flink.args.FlinkCommandArgs;
 import org.apache.seatunnel.core.starter.utils.CommandLineUtils;
 
@@ -42,7 +43,13 @@ public class FlinkStarter implements Starter {
         // set the deployment mode, used to get the job jar path.
         Common.setDeployMode(flinkCommandArgs.getDeployMode());
         Common.setStarter(true);
-        this.appJar = Common.appStarterDir().resolve(APP_JAR_NAME).toString();
+        // local:///opt/seatunnel/starter/seatunnel-flink-15-starter.jar
+        if(flinkCommandArgs.getMasterType() == MasterType.KUBERNETES_APPLICATION){
+            this.appJar = "local://"+Common.appStarterDir().resolve(APP_JAR_NAME).toString();
+        }else{
+            this.appJar = Common.appStarterDir().resolve(APP_JAR_NAME).toString();
+        }
+
     }
 
     public static void main(String[] args) {
@@ -62,6 +69,13 @@ public class FlinkStarter implements Starter {
             command.add("--target");
             command.add(flinkCommandArgs.getMasterType().getMaster());
         }
+
+        // set flink k8s  properties
+        flinkCommandArgs.getK8sParameters().stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .forEach(variable -> command.add("-D" + variable));
+
         // set flink original parameters
         command.addAll(flinkCommandArgs.getOriginalParameters());
         // set main class name
@@ -87,6 +101,11 @@ public class FlinkStarter implements Starter {
         if (flinkCommandArgs.isDecrypt()) {
             command.add("--decrypt");
         }
+        // set job id
+        if (StringUtils.isNotBlank(flinkCommandArgs.getJobId())){
+            command.add("--job-id");
+            command.add(flinkCommandArgs.getJobId());
+        }
         // set s3 access key
         if (StringUtils.isNotBlank(flinkCommandArgs.getAccessKey())){
             command.add("--access-key");
@@ -109,11 +128,19 @@ public class FlinkStarter implements Starter {
             command.add(flinkCommandArgs.getEndPoint());
         }
 
+        // set should sync task state
+        if(StringUtils.isNotBlank(flinkCommandArgs.getShouldSync())){
+            command.add("--should-sync");
+            command.add(String.valueOf(flinkCommandArgs.getShouldSync()));
+        }
+
+
         // set extra system properties
         flinkCommandArgs.getVariables().stream()
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .forEach(variable -> command.add("-D" + variable));
+
         return command;
     }
 }

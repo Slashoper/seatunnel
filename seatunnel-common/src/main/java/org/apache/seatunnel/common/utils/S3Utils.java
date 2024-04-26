@@ -141,8 +141,8 @@ public class S3Utils {
         System.out.println(s3Utils1.getS3Client() == s3Utils2.getS3Client());
         System.out.println(s3Utils1.exists("1711015209646.log"));
         String configFileName = UUID.randomUUID().toString();
-
-                System.out.println(s3Utils.readFile("/seatunnel/tmp/dolphinscheduler/exec/process/bdp/4/13220792275488_1/12436/363845/seatunnel_SeaTunnelWebTest_363845.conf"));
+        s3Utils.deleteDirectory("driver.yml");
+        s3Utils.deleteDirectory("/dolphinscheduler/seatunnel/tmp/dolphinscheduler/exec/process/bdp/4/13220792275488_1/12436/363845");
 //        s3Utils.download(
 //                "s3a://dolphinscheduler/fake_to_console.conf",
 //                Constants.LOCAL_JOBCONFIG_PATH + File.separator + configFileName);
@@ -162,6 +162,12 @@ public class S3Utils {
                 new BufferedReader(new InputStreamReader(s3Object.getObjectContent()))) {
             Stream<String> stream = bufferedReader.lines();
             return stream.collect(Collectors.toList());
+        }
+    }
+
+    public void deleteDirectory(String directoryName) {
+        if (s3Client.doesObjectExist(BUCKET_NAME, directoryName)) {
+            s3Client.deleteObject(BUCKET_NAME, directoryName);
         }
     }
 

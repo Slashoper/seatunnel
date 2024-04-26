@@ -11,12 +11,15 @@ public class ExceptionTest {
         try {
             test();
         }catch (Exception e){
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            String msg=sw.toString();
-            System.out.println(msg);
+//            StringWriter sw = new StringWriter();
+//            PrintWriter pw = new PrintWriter(sw);
+//            e.printStackTrace(pw);
+//            String msg=sw.toString();
+//            System.out.println(msg);
+            e.printStackTrace();
         }
+
+        System.out.println("hello world");
 
 
 

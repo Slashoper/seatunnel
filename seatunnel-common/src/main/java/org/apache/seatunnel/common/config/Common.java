@@ -124,6 +124,10 @@ public class Common {
         return appRootDir().resolve("starter");
     }
 
+    public static Path appConfigDir() {
+        return appRootDir().resolve("config");
+    }
+
     /** Plugin Root Dir */
     public static Path pluginRootDir() {
         return Paths.get(getSeaTunnelHome(), "plugins");

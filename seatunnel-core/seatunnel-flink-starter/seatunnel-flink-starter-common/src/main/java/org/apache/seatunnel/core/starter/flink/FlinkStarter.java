@@ -25,6 +25,8 @@ import org.apache.seatunnel.core.starter.enums.MasterType;
 import org.apache.seatunnel.core.starter.flink.args.FlinkCommandArgs;
 import org.apache.seatunnel.core.starter.utils.CommandLineUtils;
 
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +35,8 @@ import java.util.Objects;
 public class FlinkStarter implements Starter {
     private static final String APP_NAME = SeaTunnelFlink.class.getName();
     public static final String APP_JAR_NAME = EngineType.FLINK15.getStarterJarName();
+    public static final String POD_TEMPLATE_FILE_JOBMANAGER ="jobmanager-pod-template.yaml";
+    public static final String POD_TEMPLATE_FILE_TASKMANAGER ="taskmanager-pod-template.yaml";
     public static final String SHELL_NAME = EngineType.FLINK15.getStarterShellName();
     private final FlinkCommandArgs flinkCommandArgs;
     private final String appJar;
@@ -75,6 +79,22 @@ public class FlinkStarter implements Starter {
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .forEach(variable -> command.add("-D" + variable));
+
+        // set flink k8s pod-template-file
+        if (flinkCommandArgs.getMasterType() == MasterType.KUBERNETES_APPLICATION){
+            String jobManagerPodTempaltePath =
+                    Common.appConfigDir()
+                            .resolve(FlinkStarter.POD_TEMPLATE_FILE_JOBMANAGER)
+                            .toString();
+            String taskManagerPodTempaltePath = Common.appConfigDir()
+                    .resolve(FlinkStarter.POD_TEMPLATE_FILE_TASKMANAGER)
+                    .toString();
+            if (StringUtils.isNotBlank(jobManagerPodTempaltePath) && StringUtils.isNotBlank(taskManagerPodTempaltePath)) {
+                System.out.println("Pod template file path: " + jobManagerPodTempaltePath + "," + taskManagerPodTempaltePath);
+                command.add("-Dkubernetes.pod-template-file.jobmanager=" + jobManagerPodTempaltePath);
+                command.add("-Dkubernetes.pod-template-file.taskmanager=" + taskManagerPodTempaltePath);
+            }
+        }
 
         // set flink original parameters
         command.addAll(flinkCommandArgs.getOriginalParameters());
@@ -143,4 +163,15 @@ public class FlinkStarter implements Starter {
 
         return command;
     }
+
+//    public static void main(String[] args) {
+//        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+//        // 假设 pod-template.yaml 位于类路径根目录下，或在名为 "config" 的子目录下
+//        URL resourceUrl = classLoader.getResource("pod-template.yaml");
+//        // 或者，如果在子目录： classLoader.getResource("config/pod-template.yaml");
+//        if (resourceUrl != null) {
+//            String filePath = resourceUrl.getFile();
+//            System.out.println("Pod template file path: " + filePath);
+//        }
+//    }
 }

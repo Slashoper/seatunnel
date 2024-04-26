@@ -1,0 +1,16 @@
+# taskmanager-pod-template.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: flink
+    component: taskmanager
+spec:
+  containers:
+    - name: flink-main-container
+      volumeMounts:
+        - name: flink-logs
+          mountPath: /opt/flink/log
+  volumes:
+    - name: flink-logs
+      emptyDir: {}

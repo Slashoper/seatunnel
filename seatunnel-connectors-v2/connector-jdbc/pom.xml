@@ -50,6 +50,8 @@
         <kingbase8.version>8.6.0</kingbase8.version>
         <hive.jdbc.version>3.1.3</hive.jdbc.version>
         <oceanbase.jdbc.version>2.4.3</oceanbase.jdbc.version>
+        <trino-jdbc.version>430</trino-jdbc.version>
+        <hana.version>2.14.7</hana.version>
     </properties>
 
     <dependencyManagement>
@@ -188,6 +190,19 @@
                 <version>${oceanbase.jdbc.version}</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>io.trino</groupId>
+                <artifactId>trino-jdbc</artifactId>
+                <version>${trino-jdbc.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sap.cloud.db.jdbc</groupId>
+                <artifactId>ngdbc</artifactId>
+                <version>${hana.version}</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -288,6 +303,14 @@
         <dependency>
             <groupId>com.oceanbase</groupId>
             <artifactId>oceanbase-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.trino</groupId>
+            <artifactId>trino-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sap.cloud.db.jdbc</groupId>
+            <artifactId>ngdbc</artifactId>
         </dependency>
     </dependencies>
 

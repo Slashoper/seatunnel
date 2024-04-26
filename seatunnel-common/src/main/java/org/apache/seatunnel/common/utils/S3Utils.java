@@ -142,10 +142,10 @@ public class S3Utils {
         System.out.println(s3Utils1.exists("1711015209646.log"));
         String configFileName = UUID.randomUUID().toString();
 
-        //        System.out.println(s3Utils.readFile("/1711015209646.log"));
-        s3Utils.download(
-                "s3a://dolphinscheduler/fake_to_console.conf",
-                Constants.LOCAL_JOBCONFIG_PATH + File.separator + configFileName);
+                System.out.println(s3Utils.readFile("/seatunnel/tmp/dolphinscheduler/exec/process/bdp/4/13220792275488_1/12436/363845/seatunnel_SeaTunnelWebTest_363845.conf"));
+//        s3Utils.download(
+//                "s3a://dolphinscheduler/fake_to_console.conf",
+//                Constants.LOCAL_JOBCONFIG_PATH + File.separator + configFileName);
     }
 
     public boolean exists(String fileName) throws IOException {

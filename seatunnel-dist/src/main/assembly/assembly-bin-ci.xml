@@ -203,6 +203,8 @@
                 <include>com.teradata.jdbc:terajdbc4:jar</include>
                 <include>com.amazon.redshift:redshift-jdbc42:jar</include>
                 <include>net.snowflake.snowflake-jdbc:jar</include>
+                <include>io.trino:trino-jdbc:jar</include>
+                <include>com.sap.cloud.db.jdbc:ngdbc:jar</include>
             </includes>
             <outputFileNameMapping>${artifact.file.name}</outputFileNameMapping>
             <outputDirectory>/lib</outputDirectory>

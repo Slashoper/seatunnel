@@ -17,6 +17,7 @@
 
 package org.apache.seatunnel.common.utils;
 
+import com.amazonaws.services.s3.model.*;
 import org.apache.seatunnel.common.Constants;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,9 +32,6 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -141,8 +139,8 @@ public class S3Utils {
         System.out.println(s3Utils1.getS3Client() == s3Utils2.getS3Client());
         System.out.println(s3Utils1.exists("1711015209646.log"));
         String configFileName = UUID.randomUUID().toString();
-        s3Utils.deleteDirectory("driver.yml");
-        s3Utils.deleteDirectory("/dolphinscheduler/seatunnel/tmp/dolphinscheduler/exec/process/bdp/4/13220792275488_1/12436/363845");
+        s3Utils.deleteTargetPrefix("driver.yml");
+        s3Utils.deleteTargetPrefix("seatunnel/tmp/dolphinscheduler/exec/process/bdp/4/13220792275488_1/12436/363845/");
 //        s3Utils.download(
 //                "s3a://dolphinscheduler/fake_to_console.conf",
 //                Constants.LOCAL_JOBCONFIG_PATH + File.separator + configFileName);
@@ -165,9 +163,32 @@ public class S3Utils {
         }
     }
 
-    public void deleteDirectory(String directoryName) {
-        if (s3Client.doesObjectExist(BUCKET_NAME, directoryName)) {
-            s3Client.deleteObject(BUCKET_NAME, directoryName);
+    public void deleteTargetPrefix(String prefix) {
+        // 列出指定前缀下的所有对象
+        ListObjectsV2Request listReq = new ListObjectsV2Request()
+                .withBucketName(BUCKET_NAME)
+                .withPrefix(prefix);
+
+        ListObjectsV2Result objectListing;
+        do {
+            objectListing = s3Client.listObjectsV2(listReq);
+
+            // 遍历本次查询结果中的所有对象
+            for (S3ObjectSummary obj : objectListing.getObjectSummaries()) {
+                String key = obj.getKey();
+                s3Client.deleteObject(new DeleteObjectRequest(BUCKET_NAME, key));
+            }
+
+            // 更新请求，设置下一请求的ContinuationToken，以便继续列举剩余对象（如果有）
+            listReq.setContinuationToken(objectListing.getNextContinuationToken());
+        } while (objectListing.isTruncated());
+
+        // 如果有对象被删除，可能还需要清理对应的“空目录”
+        // 在S3中，这通常意味着删除一个以"/"结尾的占位符对象（若存在）
+        // 例如，若要删除的“目录”为 "dir/subdir/"，则可能需要删除名为 "dir/subdir/" 的对象
+        String directoryKey = prefix.endsWith("/") ? prefix : prefix + "/";
+        if (s3Client.doesObjectExist(BUCKET_NAME, directoryKey)) {
+            s3Client.deleteObject(BUCKET_NAME, directoryKey);
         }
     }
 

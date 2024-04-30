@@ -24,8 +24,7 @@ import org.apache.seatunnel.core.starter.flink.args.FlinkCommandArgs;
 import org.apache.seatunnel.core.starter.utils.CommandLineUtils;
 
 public class SeaTunnelFlink {
-    public static void main(String[] args)  {
-       try {
+    public static void main(String[] args) throws CommandException {
             FlinkCommandArgs flinkCommandArgs =
                     CommandLineUtils.parse(
                             args,
@@ -33,8 +32,5 @@ public class SeaTunnelFlink {
                             EngineType.FLINK15.getStarterShellName(),
                             true);
             SeaTunnel.run(flinkCommandArgs.buildCommand());
-        }catch (Exception e ){
-            e.printStackTrace();
-        }
     }
 }

@@ -325,6 +325,7 @@
         <dependency>
             <groupId>com.sap.cloud.db.jdbc</groupId>
             <artifactId>ngdbc</artifactId>
+        </dependency>
         <!-- Notice: The jar in maven is an empty jar. Issue Link:https://community.intersystems.com/comment/260011  -->
         <dependency>
             <groupId>com.intersystems</groupId>

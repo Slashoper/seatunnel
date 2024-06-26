@@ -193,7 +193,6 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-<<<<<<< HEAD
                 <groupId>io.trino</groupId>
                 <artifactId>trino-jdbc</artifactId>
                 <version>${trino-jdbc.version}</version>
@@ -204,7 +203,9 @@
                 <groupId>com.sap.cloud.db.jdbc</groupId>
                 <artifactId>ngdbc</artifactId>
                 <version>${hana.version}</version>
-=======
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.xugudb</groupId>
                 <artifactId>xugu-jdbc</artifactId>
                 <version>${xugu.jdbc.version}</version>
@@ -214,7 +215,6 @@
                 <groupId>com.intersystems</groupId>
                 <artifactId>intersystems-jdbc</artifactId>
                 <version>${iris.jdbc.version}</version>
->>>>>>> upstream/dev
                 <scope>provided</scope>
             </dependency>
         </dependencies>
@@ -318,7 +318,6 @@
             <groupId>com.oceanbase</groupId>
             <artifactId>oceanbase-client</artifactId>
         </dependency>
-<<<<<<< HEAD
         <dependency>
             <groupId>io.trino</groupId>
             <artifactId>trino-jdbc</artifactId>
@@ -326,12 +325,10 @@
         <dependency>
             <groupId>com.sap.cloud.db.jdbc</groupId>
             <artifactId>ngdbc</artifactId>
-=======
         <!-- Notice: The jar in maven is an empty jar. Issue Link:https://community.intersystems.com/comment/260011  -->
         <dependency>
             <groupId>com.intersystems</groupId>
             <artifactId>intersystems-jdbc</artifactId>
->>>>>>> upstream/dev
         </dependency>
     </dependencies>
 

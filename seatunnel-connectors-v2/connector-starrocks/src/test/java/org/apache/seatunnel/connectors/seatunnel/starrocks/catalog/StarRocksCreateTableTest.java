@@ -128,7 +128,7 @@ public class StarRocksCreateTableTest {
                         + "    \"dynamic_partition.prefix\" = \"p\"                                                                                                                                                                           \n"
                         + ");",
                 result);
-
+        
         CatalogTable catalogTable =
                 CatalogTable.of(
                         TableIdentifier.of("test", "test1", "test2"),

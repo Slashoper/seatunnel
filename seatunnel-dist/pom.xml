@@ -110,6 +110,7 @@
                 <jdom.version>1.1</jdom.version>
                 <trino-jdbc.version>430</trino-jdbc.version>
                 <hana.version>2.14.7</hana.version>
+                <influxdb.version>2.21</influxdb.version>
             </properties>
             <dependencies>
                 <!-- starters -->
@@ -847,6 +848,12 @@
                     </exclusions>
                 </dependency>
                 <!-- hive jar end -->
+                <dependency>
+                    <groupId>org.influxdb</groupId>
+                    <artifactId>influxdb-java</artifactId>
+                    <version>${influxdb.version}</version>
+                    <scope>provided</scope>
+                </dependency>
             </dependencies>
             <repositories>
                 <repository>

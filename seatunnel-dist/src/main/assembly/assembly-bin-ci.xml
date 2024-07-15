@@ -212,6 +212,7 @@
                 <include>org.apache.hive:hive-jdbc:jar</include>
                 <include>org.apache.hive:hive-exec:jar</include>
                 <include>com.xugudb:xugu-jdbc:jar</include>
+                <include>org.influxdb:influxdb-java:jar</include>
             </includes>
             <outputFileNameMapping>${artifact.file.name}</outputFileNameMapping>
             <outputDirectory>/lib</outputDirectory>

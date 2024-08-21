@@ -77,28 +77,28 @@ public class FlinkTaskExecuteCommand implements Command<FlinkCommandArgs> {
             seaTunnelTaskExecution.execute();
         } catch (Exception e) {
             // before job submitted ,we  also should sync remote task state  before job crash on flink job main entry point
-//            String shouldSync = flinkCommandArgs.getShouldSync();
-//            if (shouldSync.equals("1")) {
-//                Configuration config = GlobalConfiguration.loadConfiguration();
-//                String ds_taskSate_back_url = config.getString(
-//                        org.apache.seatunnel.core.starter.flink.constant.Constants.DS_URI, "http://bdp-dolphin-api:12345/dolphinscheduler") + "/task/state/flinkCallBack";
-//                ObjectMapper mapper = new ObjectMapper();
-//                ObjectNode objectNode = mapper.createObjectNode();
-//                objectNode.put("jobId", flinkCommandArgs.getJobId());
-//                objectNode.put("state", 2);
-//                StringWriter sw = new StringWriter();
-//                PrintWriter pw = new PrintWriter(sw);
-//                e.printStackTrace(pw);
-//                String exceptionStr = sw.toString();
-//                objectNode.put("errorMsg", exceptionStr);
-//                objectNode.put("sourceReceivedBytes",0L);
-//                objectNode.put("sourceReceivedCount",0L);
-//                objectNode.put("sinkWritedBytes",0L);
-//                objectNode.put("sinkWritedCount",0L);
-//                System.out.println("===>请求地址:" + ds_taskSate_back_url + ",请求体: " + objectNode.toString());
-//                HttpUtil.sendPost(ds_taskSate_back_url, objectNode.toString());
-//                System.out.println("===>作业异常状态同步完成");
-//            }
+            String shouldSync = flinkCommandArgs.getShouldSync();
+            if (shouldSync.equals("1")) {
+                Configuration config = GlobalConfiguration.loadConfiguration();
+                String ds_taskSate_back_url = config.getString(
+                        org.apache.seatunnel.core.starter.flink.constant.Constants.DS_URI, "http://bdp-dolphin-api:12345/dolphinscheduler") + "/task/state/flinkCallBack";
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode objectNode = mapper.createObjectNode();
+                objectNode.put("jobId", flinkCommandArgs.getJobId());
+                objectNode.put("state", 0);
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                String exceptionStr = sw.toString();
+                objectNode.put("errorMsg", exceptionStr);
+                objectNode.put("sourceReceivedBytes",0L);
+                objectNode.put("sourceReceivedCount",0L);
+                objectNode.put("sinkWritedBytes",0L);
+                objectNode.put("sinkWritedCount",0L);
+                System.out.println("===>请求地址:" + ds_taskSate_back_url + ",请求体: " + objectNode.toString());
+                HttpUtil.sendPost(ds_taskSate_back_url, objectNode.toString());
+                System.out.println("===>作业异常状态同步完成");
+            }
             throw new CommandExecuteException("Flink job executed failed", e);
         }
     }

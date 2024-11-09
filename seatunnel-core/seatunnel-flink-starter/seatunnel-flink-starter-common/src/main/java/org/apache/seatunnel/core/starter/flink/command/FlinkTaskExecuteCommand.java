@@ -95,9 +95,9 @@ public class FlinkTaskExecuteCommand implements Command<FlinkCommandArgs> {
                 objectNode.put("sourceReceivedCount",0L);
                 objectNode.put("sinkWritedBytes",0L);
                 objectNode.put("sinkWritedCount",0L);
-                System.out.println("===>请求地址:" + ds_taskSate_back_url + ",请求体: " + objectNode.toString());
+                log.info("===>请求地址:" + ds_taskSate_back_url + ",请求体: " + objectNode.toString());
                 HttpUtil.sendPost(ds_taskSate_back_url, objectNode.toString());
-                System.out.println("===>作业异常状态同步完成");
+                log.info("===>作业异常状态同步完成");
             }
             throw new CommandExecuteException("Flink job executed failed", e);
         }

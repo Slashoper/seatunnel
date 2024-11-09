@@ -48,6 +48,7 @@
             <groupId>org.influxdb</groupId>
             <artifactId>influxdb-java</artifactId>
             <version>${influxdb.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

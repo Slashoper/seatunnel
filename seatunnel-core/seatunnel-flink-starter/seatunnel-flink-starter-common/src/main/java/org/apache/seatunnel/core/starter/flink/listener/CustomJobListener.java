@@ -12,13 +12,19 @@ import org.apache.seatunnel.common.config.DeployMode;
 import org.apache.seatunnel.core.starter.enums.MasterType;
 import org.apache.seatunnel.core.starter.flink.args.FlinkCommandArgs;
 import org.apache.seatunnel.core.starter.flink.constant.Constants;
+import org.apache.seatunnel.core.starter.flink.execution.FlinkExecution;
 import org.apache.seatunnel.core.starter.flink.utils.HttpUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class CustomJobListener implements JobListener {
+
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomJobListener.class);
 
     private FlinkCommandArgs flinkCommandArgs;
 
@@ -35,7 +41,7 @@ public class CustomJobListener implements JobListener {
     public void onJobExecuted(@Nullable JobExecutionResult jobExecutionResult, @Nullable Throwable throwable) {
         String  shouldSync = flinkCommandArgs.getShouldSync();
         if(shouldSync.equals("1")) {
-            System.out.println("===>开始同步状态");
+            LOGGER.info("===>开始同步状态");
             Configuration config = GlobalConfiguration.loadConfiguration();
             String ds_taskSate_back_url = config.getString(
                     Constants.DS_URI, "http://bdp-dolphin-api:12345/dolphinscheduler") + "/task/state/flinkCallBack";
@@ -50,7 +56,7 @@ public class CustomJobListener implements JobListener {
      */
     private void syncTaskStateToScheduler(JobExecutionResult jobExecutionResult,Throwable throwable,String ds_taskSate_back_url){
 
-        System.out.println("===>sync task state to scheduler " + ds_taskSate_back_url);
+        LOGGER.info("===>sync task state to scheduler " + ds_taskSate_back_url);
         Long sinkWriteBytes = 0L;
         Long sourceReceivedBytes = 0L;
         Long sourceReceivedCount = 0L;
@@ -73,10 +79,10 @@ public class CustomJobListener implements JobListener {
                 objectNode.put("sinkWritedBytes",sinkWriteBytes);
                 objectNode.put("sinkWritedCount",sinkWriteCount);
                 objectNode.put("runtime",runtime);
-                System.out.println("===>请求地址:" + ds_taskSate_back_url + ",请求体: "+objectNode.toString());
+                LOGGER.info("===>请求体: "+objectNode.toString());
                 //            objectNode.put("runtime",jobExecutionResult.getNetRuntime());
                 HttpUtil.sendPost(ds_taskSate_back_url, objectNode.toString());
-                System.out.println("===>作业成功状态同步完成");
+                LOGGER.info("===>作业成功状态同步完成");
             } else {
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode objectNode = mapper.createObjectNode();
@@ -91,9 +97,9 @@ public class CustomJobListener implements JobListener {
                 throwable.printStackTrace(pw);
                 String exceptionStr = sw.toString();
                 objectNode.put("errorMsg", exceptionStr);
-                System.out.println("===>请求地址:" + ds_taskSate_back_url + ",请求体: "+objectNode.toString());
+                LOGGER.info("===>请求体: "+objectNode.toString());
                 HttpUtil.sendPost(ds_taskSate_back_url, objectNode.toString());
-                System.out.println("===>作业失败状态同步完成");
+                LOGGER.info("===>作业失败状态同步完成");
             }
         } catch (Exception e) {
             // 消息同步失败
@@ -110,9 +116,9 @@ public class CustomJobListener implements JobListener {
             objectNode.put("sourceReceivedCount",sourceReceivedCount);
             objectNode.put("sinkWritedBytes",sinkWriteBytes);
             objectNode.put("sinkWritedCount",sinkWriteCount);
-            System.out.println("===>请求地址:" + ds_taskSate_back_url + ",请求体: "+objectNode.toString());
+            LOGGER.info("===>请求体: "+objectNode.toString());
             HttpUtil.sendPost(ds_taskSate_back_url, objectNode.toString());
-            System.out.println("===>作业异常状态同步完成");
+            LOGGER.info("===>作业异常状态同步完成");
             throw  new RuntimeException(e);
         }
     }

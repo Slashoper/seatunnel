@@ -26,6 +26,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.graph.StreamGraph;
 import org.apache.seatunnel.core.starter.flink.args.FlinkCommandArgs;
 import org.apache.seatunnel.core.starter.flink.listener.CustomJobListener;
+import org.apache.seatunnel.core.starter.flink.utils.LinuxShellExecutor;
 import org.apache.seatunnel.shade.com.typesafe.config.Config;
 import org.apache.seatunnel.shade.com.typesafe.config.ConfigUtil;
 import org.apache.seatunnel.shade.com.typesafe.config.ConfigValueFactory;
@@ -161,9 +162,22 @@ public class FlinkExecution implements TaskExecution {
                             .build();
             LOGGER.info("Job finished, execution result: \n{}", jobMetricsSummary);
 
+            // tail -f /dev/null
+            LOGGER.info("====> tail -f /dev/null");
+            List<String> tailCommand = buildTailCommand();
+            LinuxShellExecutor.executeCommand(tailCommand);
+
         } catch (Exception e) {
             throw new TaskExecuteException("Execute Flink job error", e);
         }
+    }
+
+    private List<String> buildTailCommand(){
+        List<String> args = new ArrayList<>();
+        args.add("tail");
+        args.add("-f");
+        args.add("/dev/null");
+        return args;
     }
 
     private void registerPlugin(Config envConfig) {
